@@ -14,9 +14,10 @@ export default defineConfig({
       manifest: false,
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
-        // The posthog-js chunk is only ever fetched when VITE_POSTHOG_KEY is set (a rare,
-        // opt-in integration) — don't force every visitor's service worker to precache it.
-        globIgnores: ['**/posthog-*.js'],
+        // The posthog-js and tesseract.js chunks are only fetched when someone actually
+        // uses that opt-in integration or the Scan feature — don't force every visitor's
+        // service worker to precache them.
+        globIgnores: ['**/posthog-*.js', '**/tesseract-*.js'],
         navigateFallbackDenylist: [/^\/downloads\//],
         runtimeCaching: [
           {
@@ -43,6 +44,14 @@ export default defineConfig({
               expiration: { maxEntries: 2, maxAgeSeconds: 60 * 60 * 24 * 30 },
             },
           },
+          {
+            urlPattern: /\/assets\/tesseract-.*\.js$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'tesseract-lib',
+              expiration: { maxEntries: 2, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
         ],
       },
     }),
@@ -53,6 +62,7 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('posthog-js')) return 'posthog';
+          if (id.includes('tesseract.js') || id.includes('tesseract-core') || id.includes('idb-keyval')) return 'tesseract';
         },
       },
     },

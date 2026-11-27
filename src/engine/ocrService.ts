@@ -1,4 +1,4 @@
-import { createWorker, type Worker } from 'tesseract.js';
+import type { Worker } from 'tesseract.js';
 
 // Restricting Tesseract's output to this set dramatically improves accuracy
 // for scanned arithmetic — it never has to guess between a letter and a digit.
@@ -11,14 +11,19 @@ let workerPromise: Promise<Worker> | null = null;
 
 function getWorker(): Promise<Worker> {
   if (!workerPromise) {
-    workerPromise = (async () => {
-      const worker = await createWorker('eng');
-      await worker.setParameters({ tessedit_char_whitelist: WHITELIST });
-      return worker;
-    })().catch((err) => {
-      workerPromise = null; // allow retry on next scan instead of permanently failing
-      throw err;
-    });
+    // Dynamically imported: tesseract.js's JS is only ever needed by people who
+    // actually open Scan, so it has no business sitting in the main bundle (or
+    // the PWA precache) for every visitor the way the calculator itself does.
+    workerPromise = import('tesseract.js')
+      .then(async ({ createWorker }) => {
+        const worker = await createWorker('eng');
+        await worker.setParameters({ tessedit_char_whitelist: WHITELIST });
+        return worker;
+      })
+      .catch((err) => {
+        workerPromise = null; // allow retry on next scan instead of permanently failing
+        throw err;
+      });
   }
   return workerPromise;
 }

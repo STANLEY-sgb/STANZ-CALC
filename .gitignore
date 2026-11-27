@@ -52,3 +52,6 @@ ios/.xcode.env.local
 *.keystore
 *.jks
 !debug.keystore
+
+.vercel
+.env*

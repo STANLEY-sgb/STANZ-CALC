@@ -55,3 +55,6 @@ ios/.xcode.env.local
 
 .vercel
 .env*
+
+# Local design reference images (not project assets)
+UI CALC.jpg

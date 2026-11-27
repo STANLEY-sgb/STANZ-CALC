@@ -5,6 +5,7 @@ import { findCurrency } from '../engine/currencyService';
 import { formatCurrencyAmount } from '../utils/format';
 import { playKeyFeedback } from '../utils/soundAndHaptics';
 import { trackFeatureUsed } from '../utils/analytics';
+import { AutoFitText } from './AutoFitText';
 
 type CurrencyApi = ReturnType<typeof import('../hooks/useCurrencyConverter').useCurrencyConverter>;
 
@@ -90,23 +91,34 @@ function CalcScreen({ calc, tapeRef }: { calc: CalculatorApi; tapeRef: RefObject
             className="relative flex items-center justify-end gap-2 py-2 border-b border-amber-hairline text-right active:bg-white/5"
           >
             <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-amber rounded-full" />
-            <span className="tabular-display text-sm text-amber/90 truncate">
-              {h.expression} = {h.result}
-            </span>
+            <AutoFitText
+              text={`${h.expression} = ${h.result}`}
+              maxFontSize={14}
+              minFontSize={9}
+              className="flex-1 min-w-0 text-right"
+              fontClassName="tabular-display text-amber/90"
+            />
           </button>
         ))}
       </div>
 
       <div className="px-3 pb-4 pt-2">
-        <div className="text-right tabular-display text-amber-dim text-[20px] h-7 truncate">
-          {calc.errorFlash ?? calc.livePreview}
+        <div className="h-7 flex items-end justify-end">
+          <AutoFitText
+            text={calc.errorFlash ?? calc.livePreview}
+            maxFontSize={20}
+            minFontSize={11}
+            className="text-right"
+            fontClassName="tabular-display text-amber-dim"
+          />
         </div>
-        <div
-          className="text-right tabular-display font-bold text-amber truncate"
-          style={{ fontSize: calc.expression.length > 14 ? '28px' : calc.expression.length > 9 ? '36px' : '46px' }}
-        >
-          {calc.expression || '0'}
-        </div>
+        <AutoFitText
+          text={calc.expression || '0'}
+          maxFontSize={46}
+          minFontSize={16}
+          className="text-right"
+          fontClassName="tabular-display font-bold text-amber"
+        />
       </div>
     </>
   );
@@ -133,9 +145,13 @@ function CurrencyScreen({
           <span className="text-lg">{fromMeta?.flag}</span>
           <span className="font-bold tabular-display">{currency.from}</span>
         </button>
-        <div className="tabular-display text-amber text-3xl font-bold truncate max-w-[60%]">
-          {currency.amountExpr}
-        </div>
+        <AutoFitText
+          text={currency.amountExpr}
+          maxFontSize={30}
+          minFontSize={14}
+          className="max-w-[60%] text-right"
+          fontClassName="tabular-display text-amber font-bold"
+        />
       </div>
 
       <div className="flex items-center gap-2">
@@ -179,9 +195,13 @@ function CurrencyScreen({
           <span className="text-lg">{toMeta?.flag}</span>
           <span className="font-bold tabular-display">{currency.to}</span>
         </button>
-        <div className="tabular-display text-amber text-3xl font-bold truncate max-w-[60%]">
-          {isFinite(currency.convertedValue) ? formatCurrencyAmount(currency.convertedValue) : '—'}
-        </div>
+        <AutoFitText
+          text={isFinite(currency.convertedValue) ? formatCurrencyAmount(currency.convertedValue) : '—'}
+          maxFontSize={30}
+          minFontSize={14}
+          className="max-w-[60%] text-right"
+          fontClassName="tabular-display text-amber font-bold"
+        />
       </div>
     </div>
   );

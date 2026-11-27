@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Stanz Calc</string>
+    <string name="title_activity_main">Stanz Calc</string>
+    <string name="package_name">online.stanzapps.calc</string>
+    <string name="custom_url_scheme">online.stanzapps.calc</string>
+</resources>

@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@theme {
+  --font-mono-display: "Share Tech Mono", "JetBrains Mono", ui-monospace, monospace;
+  --font-sans-ui: "Inter", system-ui, sans-serif;
+
+  --color-chassis-top: #eae8e1;
+  --color-chassis-bottom: #d5d3ca;
+  --color-chassis-edge: #c3c1b7;
+  --color-desk: #cfcbc0;
+
+  --color-screen: #050505;
+  --color-amber: #ff8c00;
+  --color-amber-dim: #ff9500;
+  --color-amber-hairline: rgba(255, 140, 0, 0.22);
+
+  --color-key-ivory: #eceae2;
+  --color-key-cream: #eae8e0;
+  --color-key-slate: #6d6f71;
+  --color-key-orange: #ff7a00;
+  --color-badge-red: #c82828;
+  --color-badge-green: #267339;
+  --color-badge-blue: #1b5a96;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  background: var(--color-desk);
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans-ui);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button {
+  font-family: inherit;
+}
+
+.tabular-display {
+  font-family: var(--font-mono-display);
+  font-variant-numeric: tabular-nums;
+}
+
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 140, 0, 0.25);
+  border-radius: 4px;
+}

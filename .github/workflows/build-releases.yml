@@ -1,0 +1,129 @@
+name: Build Releases
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web bundle
+        run: npx vite build
+
+      - name: Sync Capacitor Android
+        run: npx cap sync android
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Assemble debug APK
+        working-directory: android
+        run: chmod +x ./gradlew && ./gradlew assembleDebug --no-daemon
+
+      - name: Assemble release APK (unsigned)
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Publish debug APK as stanz-calc.apk
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk public/downloads/stanz-calc.apk
+
+      - name: Upload debug APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: stanz-calc-debug-apk
+          path: public/downloads/stanz-calc.apk
+
+      - name: Upload unsigned release APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: stanz-calc-release-unsigned-apk
+          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
+
+      - name: Attach APKs to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            public/downloads/stanz-calc.apk
+            android/app/build/outputs/apk/release/app-release-unsigned.apk
+
+  build-ios:
+    name: Build iOS (unsigned .ipa)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web bundle
+        run: npx vite build
+
+      - name: Sync Capacitor iOS
+        run: npx cap sync ios
+
+      - name: Install CocoaPods dependencies
+        working-directory: ios/App
+        run: pod install --repo-update
+
+      - name: Build app for device (no code signing)
+        working-directory: ios/App
+        run: |
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath "$RUNNER_TEMP/build" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Package unsigned .ipa
+        run: |
+          mkdir -p "$RUNNER_TEMP/Payload"
+          cp -R "$RUNNER_TEMP/build/Build/Products/Release-iphoneos/App.app" "$RUNNER_TEMP/Payload/StanzCalc.app"
+          cd "$RUNNER_TEMP"
+          zip -r stanz-calc-unsigned.ipa Payload
+          mkdir -p "$GITHUB_WORKSPACE/public/downloads"
+          cp stanz-calc-unsigned.ipa "$GITHUB_WORKSPACE/public/downloads/stanz-calc-unsigned.ipa"
+
+      - name: Upload unsigned IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: stanz-calc-unsigned-ipa
+          path: public/downloads/stanz-calc-unsigned.ipa
+
+      - name: Attach IPA to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: public/downloads/stanz-calc-unsigned.ipa

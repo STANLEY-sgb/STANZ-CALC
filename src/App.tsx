@@ -20,7 +20,8 @@ function App() {
   const currency = useCurrencyConverter();
 
   const [deckExpanded, setDeckExpanded] = useState(false);
-  const [screenMode, setScreenMode] = useState<'calc' | 'currency'>('calc');
+  const [screenMode, setScreenMode] = useState<'calc' | 'currency' | 'scan'>('calc');
+  const [preScanMode, setPreScanMode] = useState<'calc' | 'currency'>('calc');
   const [drawer, setDrawer] = useState<Drawer>(null);
   const [currencyPickerFor, setCurrencyPickerFor] = useState<'from' | 'to' | null>(null);
   const [soundEnabled, setSoundEnabledState] = useState(() => isSoundEnabled());
@@ -62,7 +63,7 @@ function App() {
     equals: () => currency.setAmountExpr(String(currency.amountValue || 0)),
   };
 
-  const activeInput = screenMode === 'calc' ? calcAdapter : currencyAdapter;
+  const activeInput = screenMode === 'currency' ? currencyAdapter : calcAdapter;
 
   useEffect(() => {
     trackAppLaunch();
@@ -157,13 +158,19 @@ function App() {
             calc={calc}
             currency={currency}
             onOpenCurrencyPicker={openCurrencyPicker}
+            onOpenMenu={() => setDrawer('menu')}
+            onCloseScan={() => setScreenMode(preScanMode)}
           />
 
           <div className={deckExpanded ? 'grid sm:grid-cols-2 gap-2' : ''}>
             <TactileKeypad
               input={activeInput}
               onOpenFavorites={() => setDrawer('favorites')}
-              onOpenMenu={() => setDrawer('menu')}
+              onOpenScan={() => {
+                setPreScanMode(screenMode === 'currency' ? 'currency' : 'calc');
+                setScreenMode('scan');
+                trackFeatureUsed('number_capture_scan');
+              }}
             />
             {deckExpanded && <ScientificDeck calc={calc} />}
           </div>

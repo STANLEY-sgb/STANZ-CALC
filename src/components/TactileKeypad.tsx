@@ -1,5 +1,5 @@
 import { useCallback, useRef, type ReactNode, type PointerEvent as ReactPointerEvent } from 'react';
-import { Star, Menu, Delete } from 'lucide-react';
+import { Star, Camera, Delete } from 'lucide-react';
 import { playKeyFeedback } from '../utils/soundAndHaptics';
 
 export interface KeypadInput {
@@ -18,7 +18,7 @@ export interface KeypadInput {
 interface TactileKeypadProps {
   input: KeypadInput;
   onOpenFavorites: () => void;
-  onOpenMenu: () => void;
+  onOpenScan: () => void;
 }
 
 const LONG_PRESS_MS = 450;
@@ -74,7 +74,7 @@ export function Keycap({
   );
 }
 
-export function TactileKeypad({ input, onOpenFavorites, onOpenMenu }: TactileKeypadProps) {
+export function TactileKeypad({ input, onOpenFavorites, onOpenScan }: TactileKeypadProps) {
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTapRef = useRef(0);
   const longPressedRef = useRef(false);
@@ -130,9 +130,9 @@ export function TactileKeypad({ input, onOpenFavorites, onOpenMenu }: TactileKey
           <Star size={16} fill="white" />
         </span>
       </Keycap>
-      <Keycap bg="bg-key-ivory" onClick={onOpenMenu} ariaLabel="Mode and app menu" feedback="accent">
+      <Keycap bg="bg-key-ivory" onClick={onOpenScan} ariaLabel="Scan numbers" feedback="accent">
         <span className="w-9 h-9 rounded-full bg-badge-blue flex items-center justify-center text-white">
-          <Menu size={16} strokeWidth={3} />
+          <Camera size={16} strokeWidth={2.5} />
         </span>
       </Keycap>
       <Keycap bg="bg-key-orange text-white" onClick={() => input.inputParen('(')} ariaLabel="Open parenthesis">

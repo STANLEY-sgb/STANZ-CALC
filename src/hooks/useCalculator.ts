@@ -234,6 +234,11 @@ export function useCalculator() {
     setExpression((prev) => prev + result.replace(/,/g, ''));
   }, []);
 
+  /** Adds an entry straight to the history tape without touching the live expression — used by Scan Numbers. */
+  const addHistoryEntry = useCallback((expr: string, result: string) => {
+    setHistory((prev) => [{ id: `${Date.now()}-${Math.random()}`, expression: expr, result }, ...prev].slice(0, MAX_HISTORY));
+  }, []);
+
   const memoryClear = useCallback(() => persistMemory(new Decimal(0)), [persistMemory]);
   const memoryRecall = useCallback(() => {
     insertFromHistory(memory.toString());
@@ -291,6 +296,7 @@ export function useCalculator() {
     clearTape,
     equals,
     insertFromHistory,
+    addHistoryEntry,
     memoryClear,
     memoryRecall,
     memoryAdd,

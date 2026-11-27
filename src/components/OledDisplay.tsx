@@ -1,21 +1,24 @@
 import { useEffect, useRef, type RefObject } from 'react';
-import { Maximize2, Minimize2, ArrowDownUp, Star } from 'lucide-react';
+import { Maximize2, Minimize2, ArrowDownUp, Star, Menu } from 'lucide-react';
 import type { CalculatorApi } from '../hooks/useCalculator';
 import { findCurrency } from '../engine/currencyService';
 import { formatCurrencyAmount } from '../utils/format';
 import { playKeyFeedback } from '../utils/soundAndHaptics';
 import { trackFeatureUsed } from '../utils/analytics';
 import { AutoFitText } from './AutoFitText';
+import { ScanScreen } from './ScanScreen';
 
 type CurrencyApi = ReturnType<typeof import('../hooks/useCurrencyConverter').useCurrencyConverter>;
 
 interface OledDisplayProps {
-  screenMode: 'calc' | 'currency';
+  screenMode: 'calc' | 'currency' | 'scan';
   deckExpanded: boolean;
   onToggleExpand: () => void;
   calc: CalculatorApi;
   currency: CurrencyApi;
   onOpenCurrencyPicker: (which: 'from' | 'to') => void;
+  onOpenMenu: () => void;
+  onCloseScan: () => void;
 }
 
 export function OledDisplay({
@@ -25,12 +28,22 @@ export function OledDisplay({
   calc,
   currency,
   onOpenCurrencyPicker,
+  onOpenMenu,
+  onCloseScan,
 }: OledDisplayProps) {
   const tapeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     tapeRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   }, [calc.history.length]);
+
+  if (screenMode === 'scan') {
+    return (
+      <div className="relative rounded-[22px] bg-screen shadow-[inset_0_3px_10px_rgba(0,0,0,0.9)] overflow-hidden select-none">
+        <ScanScreen calc={calc} onClose={onCloseScan} onInsert={(result) => { calc.insertFromHistory(result); onCloseScan(); }} />
+      </div>
+    );
+  }
 
   return (
     <div className="relative rounded-[22px] bg-screen shadow-[inset_0_3px_10px_rgba(0,0,0,0.9)] overflow-hidden select-none">
@@ -48,7 +61,7 @@ export function OledDisplay({
       </button>
 
       {/* Status strip */}
-      <div className="flex justify-end gap-2 px-3 pt-2 pb-1 text-[10px] tracking-widest tabular-display">
+      <div className="flex items-center justify-end gap-2 px-3 pt-2 pb-1 text-[10px] tracking-widest tabular-display">
         {screenMode === 'calc' ? (
           <>
             {(['DEG', 'RAD', 'GRAD'] as const).map((m) => (
@@ -63,6 +76,13 @@ export function OledDisplay({
             {currency.status === 'live' ? 'FX LIVE' : currency.status === 'cached' ? 'FX CACHED' : currency.status === 'loading' ? 'FX …' : 'FX OFFLINE'}
           </span>
         )}
+        <button
+          onClick={onOpenMenu}
+          aria-label="Mode and app menu"
+          className="w-5 h-5 rounded-full border border-amber/50 flex items-center justify-center text-amber/80 ml-1"
+        >
+          <Menu size={10} strokeWidth={2.5} />
+        </button>
       </div>
 
       {screenMode === 'calc' ? (

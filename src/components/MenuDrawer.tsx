@@ -4,7 +4,7 @@ import type { AngleMode } from '../engine/mathParser';
 
 interface MenuDrawerProps {
   onClose: () => void;
-  screenMode: 'calc' | 'currency';
+  screenMode: 'calc' | 'currency' | 'scan';
   onSetScreenMode: (m: 'calc' | 'currency') => void;
   deckExpanded: boolean;
   onSetDeckExpanded: (v: boolean) => void;
